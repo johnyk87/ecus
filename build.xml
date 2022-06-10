@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="ecus" default="build" basedir=".">
+
+	<!--            -->
+	<!-- Properties -->
+	<!--            -->
+	
+    <!-- load environment variables as properties -->
+    <property environment="env"/>
+	
+    <!-- load properties files -->
+    <property file="${basedir}/build.properties"/>
+	
+    <!-- properties with default folder locations -->
+    <property name="folder.src" value="${basedir}/src"/>
+    <property name="folder.etc" value="${basedir}/etc"/>
+    <property name="folder.lib" value="${basedir}/lib"/>
+    <property name="folder.build" value="${basedir}/build"/>
+    <property name="folder.build.classes" value="${folder.build}/classes"/>
+    <property name="folder.build.jar" value="${folder.build}/jar"/>
+	
+    <!-- files properties -->
+    <property name="file.ecus.jar" value="${folder.build.jar}/${ant.project.name}-v${ecus.version}.jar"/>
+    <property name="file.ecus.readme" value="${basedir}/README.txt"/>
+	
+    <!-- project classpath -->
+    <path id="project.classpath">
+        <pathelement location="${folder.build.classes}" />
+        <pathelement location="${folder.build.etc}" />
+        <fileset dir="${folder.lib}">
+            <include name="*.jar" />
+        </fileset>
+    </path>
+
+	<!--         -->
+	<!-- Folders -->
+	<!--         -->
+
+    <target name="setup-folders">
+        <mkdir dir="${folder.build}"/>
+        <mkdir dir="${folder.build.classes}"/>
+        <mkdir dir="${folder.build.jar}"/>
+    </target>
+
+    <target name="clean-folders">
+        <delete dir="${folder.build}" failonerror="false" deleteonexit="true" includeemptydirs="true" />
+    </target>
+
+	<!--         -->
+	<!-- Compile -->
+	<!--         -->
+	
+    <!-- compile source code -->
+    <target name="compile-src" depends="setup-folders">
+        <javac srcdir="${folder.src}" destdir="${folder.build.classes}" debug="false" optimize="true" deprecation="true" verbose="false" >
+            <compilerarg line="" />
+            <classpath refid="project.classpath" />
+        </javac>
+    </target>
+	
+    <!-- copy resources -->
+    <target name="copy-resources" depends="setup-folders">
+        <copy todir="${folder.build.classes}" overwrite="true" includeEmptyDirs="true" >
+			<fileset dir="${folder.etc}" />
+		</copy>		
+    </target>
+
+	<!--        -->
+	<!-- WebApp -->
+	<!--        -->
+
+    <!-- create jar -->
+    <target name="create-jar" depends="compile-src,copy-resources">
+        <jar destfile="${file.ecus.jar}" >
+	    	<fileset dir="${folder.build.classes}" />
+            <zipfileset file="${file.ecus.readme}" prefix="META-INF" />
+        </jar>
+        	<!-- TODO: load libs -->
+    </target>
+
+	<!--     -->
+	<!-- API -->
+	<!--     -->
+
+    <!-- clean war -->
+    <target name="clean" depends="clean-folders" description="Clean build folders" />
+
+    <!-- build war -->
+    <target name="build" depends="create-jar" description="Build jar" />
+
+    <!-- rebuild war -->
+    <target name="rebuild" depends="clean,build" description="Clean and build jar" />
+
+</project>
